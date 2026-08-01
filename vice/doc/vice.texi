@@ -21622,6 +21622,7 @@ mentioned above.
 * MON_CMD_CPUHISTORY_GET::
 * MON_CMD_PALETTE_GET::
 * MON_CMD_JOYPORT_SET::
+* MON_CMD_KEYBOARD_MATRIX_SET::
 * MON_CMD_USERPORT_SET::
 * MON_CMD_EXIT::
 * MON_CMD_QUIT::
@@ -22704,6 +22705,38 @@ PN PN | PV PV
 Response type:
 
 0xa2: MON_RESPONSE_JOYPORT_SET
+
+Response body:
+
+@example
+Currently empty.
+@end example
+@*
+
+@node MON_CMD_KEYBOARD_MATRIX_SET
+@subsection Keyboard matrix set (0xa3)
+
+Press or release a keyboard matrix position for the active machine.
+
+Minimum VICE version: Not yet released
+
+Command body:
+
+@example
+RR CC PP
+@end example
+@*
+
+@table @strong
+@item RR: 1 byte: Matrix row
+@item CC: 1 byte: Matrix column
+@item PP: 1 byte: 0 to release, 1 to press
+
+@end table
+
+Response type:
+
+0xa3: MON_RESPONSE_KEYBOARD_MATRIX_SET
 
 Response body:
 

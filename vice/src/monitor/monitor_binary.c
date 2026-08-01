@@ -37,6 +37,7 @@
 #include "cmdline.h"
 #include "drive.h"
 #include "interrupt.h"
+#include "keyboard.h"
 #include "lib.h"
 #include "log.h"
 #include "kbdbuf.h"
@@ -116,6 +117,7 @@ enum t_binary_command {
     e_MON_CMD_PALETTE_GET = 0x91,
 
     e_MON_CMD_JOYPORT_SET = 0xa2,
+    e_MON_CMD_KEYBOARD_MATRIX_SET = 0xa3,
 
     e_MON_CMD_USERPORT_SET = 0xb2,
 
@@ -165,6 +167,7 @@ enum t_binary_response {
     e_MON_RESPONSE_PALETTE_GET = 0x91,
 
     e_MON_RESPONSE_JOYPORT_SET = 0xa2,
+    e_MON_RESPONSE_KEYBOARD_MATRIX_SET = 0xa3,
 
     e_MON_RESPONSE_USERPORT_SET = 0xb2,
 
@@ -1411,6 +1414,30 @@ static void monitor_binary_process_joyport_set(binary_command_t *command)
     monitor_binary_response(0, e_MON_RESPONSE_JOYPORT_SET, e_MON_ERR_OK, command->request_id, NULL);
 }
 
+static void monitor_binary_process_keyboard_matrix_set(binary_command_t *command)
+{
+    unsigned char *body = command->body;
+
+    if (command->length < 3) {
+        monitor_binary_error(e_MON_ERR_CMD_INVALID_LENGTH, command->request_id);
+        return;
+    }
+
+    if (body[0] >= KBD_ROWS || body[1] >= KBD_COLS || body[2] > 1) {
+        monitor_binary_error(e_MON_ERR_INVALID_PARAMETER, command->request_id);
+        return;
+    }
+
+    keyboard_set_keyarr_any(body[0], body[1], body[2]);
+    monitor_binary_response(
+        0,
+        e_MON_RESPONSE_KEYBOARD_MATRIX_SET,
+        e_MON_ERR_OK,
+        command->request_id,
+        NULL
+    );
+}
+
 static void monitor_binary_process_userport_set(binary_command_t *command)
 {
     IO_SIM_RESULT ret;
@@ -1833,6 +1860,8 @@ static void monitor_binary_process_command(unsigned char * pbuffer)
 
     } else if (command_type == e_MON_CMD_JOYPORT_SET) {
         monitor_binary_process_joyport_set(&command);
+    } else if (command_type == e_MON_CMD_KEYBOARD_MATRIX_SET) {
+        monitor_binary_process_keyboard_matrix_set(&command);
 
     } else if (command_type == e_MON_CMD_USERPORT_SET) {
         monitor_binary_process_userport_set(&command);
